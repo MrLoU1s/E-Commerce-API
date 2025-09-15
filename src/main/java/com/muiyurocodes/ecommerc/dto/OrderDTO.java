@@ -6,15 +6,17 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PastOrPresent;
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 public class OrderDTO {
-
     private Long id;
 
-    @Min(value = 0, message = "Total amount must be non-negative")
-    private Double totalAmount;
+    @NotNull(message = "User ID is required")
+    private Long userId;
 
     @NotNull(message = "Status is required")
     private String status;
@@ -24,4 +26,8 @@ public class OrderDTO {
 
     @NotBlank(message = "Shipping address is required")
     private String shippingAddress;
+
+    private List<OrderItemDTO> orderItems = new ArrayList<>();
+
+    private BigDecimal totalPrice;
 }

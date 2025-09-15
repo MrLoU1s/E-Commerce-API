@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.math.BigDecimal;
+
 @Entity
 @Getter
 @Setter
@@ -26,6 +28,6 @@ public class OrderItem {
 
     private int quantity;
 
-    private Double price; // Price at the time of purchase
+    private BigDecimal price; // Price at the time of purchase
 
 }
