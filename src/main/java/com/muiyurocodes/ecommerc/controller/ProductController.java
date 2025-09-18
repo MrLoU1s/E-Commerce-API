@@ -35,4 +35,9 @@ public class ProductController {
     public ResponseEntity<Page<ProductDTO>> searchProducts(@RequestParam("q") String query, Pageable pageable) {
         return ResponseEntity.ok(productService.searchProductsByName(query, pageable));
     }
+
+    @GetMapping("/in-stock")
+    public ResponseEntity<Page<ProductDTO>> getInStockProducts(Pageable pageable) {
+        return ResponseEntity.ok(productService.getInStockProducts(pageable));
+    }
 }

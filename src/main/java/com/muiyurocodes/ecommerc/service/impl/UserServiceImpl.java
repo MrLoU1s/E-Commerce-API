@@ -1,8 +1,8 @@
 package com.muiyurocodes.ecommerc.service.impl;
 
-import com.muiyurocodes.ecommerc.dto.UserDTO;
 import com.muiyurocodes.ecommerc.dto.UserRegistrationDTO;
-import com.muiyurocodes.ecommerc.exception.EmailAlreadyExistsException;
+import com.muiyurocodes.ecommerc.dto.UserResponseDTO;
+import com.muiyurocodes.ecommerc.exception.UserAlreadyExistsException;
 import com.muiyurocodes.ecommerc.model.Role;
 import com.muiyurocodes.ecommerc.model.User;
 import com.muiyurocodes.ecommerc.repository.UserRepository;
@@ -11,8 +11,6 @@ import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -23,23 +21,25 @@ public class UserServiceImpl implements UserService {
     private final PasswordEncoder passwordEncoder;
 
     @Override
-    public UserDTO registerUser(UserRegistrationDTO registrationDTO) {
+    public UserResponseDTO registerUser(UserRegistrationDTO registrationDTO) {
+        // 1. Check if user already exists
         if (userRepository.existsByEmail(registrationDTO.getEmail())) {
-            throw new EmailAlreadyExistsException("Email is already in use: " + registrationDTO.getEmail());
+            throw new UserAlreadyExistsException("User with email " + registrationDTO.getEmail() + " already exists.");
         }
 
-        User user = modelMapper.map(registrationDTO, User.class);
-        user.setPassword(passwordEncoder.encode(registrationDTO.getPassword()));
-        user.setRole(Role.ROLE_USER);
+        // 2. Map DTO to entity
+        User newUser = modelMapper.map(registrationDTO, User.class);
 
-        User savedUser = userRepository.save(user);
+        // 3. Encode password
+        newUser.setPassword(passwordEncoder.encode(registrationDTO.getPassword()));
 
-        return modelMapper.map(savedUser, UserDTO.class);
-    }
+        // 4. Set default role
+        newUser.setRole(Role.ROLE_USER);
 
-    @Override
-    public Optional<UserDTO> findUserByEmail(String email) {
-        return userRepository.findByEmail(email)
-                .map(user -> modelMapper.map(user, UserDTO.class));
+        // 5. Save user
+        User savedUser = userRepository.save(newUser);
+
+        // 6. Map entity to response DTO
+        return modelMapper.map(savedUser, UserResponseDTO.class);
     }
 }

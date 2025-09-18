@@ -63,6 +63,32 @@ public class CartServiceImpl implements CartService {
     }
 
     @Override
+    public CartDTO updateCartItem(Long userId, Long productId, int quantity) {
+        if (quantity <= 0) {
+            return removeProductFromCart(userId, productId);
+        }
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User not found with id: " + userId));
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new ProductNotFoundException("Product not found with id: " + productId));
+        Cart cart = cartRepository.findByUser(user)
+                .orElseThrow(() -> new IllegalStateException("User does not have a cart"));
+
+        CartItem cartItem = cartItemRepository.findByCartAndProduct(cart, product)
+                .orElseThrow(() -> new ProductNotFoundException("Product not in cart"));
+
+        if (product.getStockQuantity() < quantity) {
+            throw new ProductNotFoundException("Not enough stock for product with id: " + productId);
+        }
+
+        cartItem.setQuantity(quantity);
+        cartItemRepository.save(cartItem);
+
+        return convertToCartDTO(cart);
+    }
+
+    @Override
     public CartDTO removeProductFromCart(Long userId, Long productId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("User not found with id: " + userId));

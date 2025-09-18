@@ -17,4 +17,6 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     Optional<Product> findByIdAndStockQuantityGreaterThan(Long id, int quantity);
 
     List<Product> findAllByStockQuantityGreaterThan(int quantity);
+
+    Page<Product> findAllByStockQuantityGreaterThan(int quantity, Pageable pageable);
 }
