@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
+@Transactional // ensures that the ACID properties of a transaction are observed
 public class CartServiceImpl implements CartService {
 
     private final CartRepository cartRepository;
@@ -93,15 +93,28 @@ public class CartServiceImpl implements CartService {
         return cartRepository.save(newCart);
     }
 
+    // 1. Input: The 'cart' parameter is the Cart entity object.
     private CartDTO convertToCartDTO(Cart cart) {
+        // 2. Initial Mapping: Copies properties like 'id' from the Cart entity to a new CartDTO object.
         CartDTO cartDTO = modelMapper.map(cart, CartDTO.class);
+
+        // 3. Convert Item List: Iterates through each CartItem entity in the cart's item list
+        //    and calls 'convertToCartItemDTO' for each one, collecting the results into a list of DTOs.
         List<CartItemDTO> itemDTOs = cart.getItems().stream()
                 .map(this::convertToCartItemDTO)
                 .collect(Collectors.toList());
+
+        // 5. Finalize DTO (Part 1): Sets the newly created list of CartItemDTOs onto the main CartDTO.
         cartDTO.setItems(itemDTOs);
+
+        // 4. Calculate Total Price: Streams through the list of DTOs, multiplies price by quantity for each,
+        //    and sums them up to get the final total.
+        // 5. Finalize DTO (Part 2): Sets the calculated total price on the CartDTO.
         cartDTO.setTotalPrice(itemDTOs.stream()
                 .map(item -> item.getPrice().multiply(BigDecimal.valueOf(item.getQuantity())))
                 .reduce(BigDecimal.ZERO, BigDecimal::add));
+
+        // 6. Output: Returns the fully constructed CartDTO.
         return cartDTO;
     }
 
