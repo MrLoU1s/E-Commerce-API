@@ -2,7 +2,7 @@ package com.muiyurocodes.ecommerc.service.impl;
 
 import com.muiyurocodes.ecommerc.dto.UserRegistrationDTO;
 import com.muiyurocodes.ecommerc.dto.UserResponseDTO;
-import com.muiyurocodes.ecommerc.exception.UserAlreadyExistsException;
+import com.muiyurocodes.ecommerc.exception.EmailAlreadyExistsException;
 import com.muiyurocodes.ecommerc.model.Role;
 import com.muiyurocodes.ecommerc.model.User;
 import com.muiyurocodes.ecommerc.repository.UserRepository;
@@ -24,7 +24,7 @@ public class UserServiceImpl implements UserService {
     public UserResponseDTO registerUser(UserRegistrationDTO registrationDTO) {
         // 1. Check if user already exists
         if (userRepository.existsByEmail(registrationDTO.getEmail())) {
-            throw new UserAlreadyExistsException("User with email " + registrationDTO.getEmail() + " already exists.");
+            throw new EmailAlreadyExistsException("User with email " + registrationDTO.getEmail() + " already exists.");
         }
 
         // 2. Map DTO to entity
