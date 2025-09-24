@@ -1,19 +1,24 @@
 package com.muiyurocodes.ecommerc.service;
 
+import com.muiyurocodes.ecommerc.dto.CategoryDTO;
 import com.muiyurocodes.ecommerc.dto.ProductDTO;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
+import com.muiyurocodes.ecommerc.dto.ProductResponseDTO;
 
-import java.util.Optional;
+import java.util.List;
 
-@Service
 public interface ProductService {
-    Page<ProductDTO> getAllProducts(Pageable pageable);
 
-    Optional<ProductDTO> getProductById(Long productId);
+    // Category methods
+    CategoryDTO createCategory(CategoryDTO categoryDTO);
+    List<CategoryDTO> getAllCategories();
+    CategoryDTO getCategoryById(Long categoryId);
+    void deleteCategory(Long categoryId);
 
-    Page<ProductDTO> searchProductsByName(String name, Pageable pageable);
-
-    Page<ProductDTO> getInStockProducts(Pageable pageable);
+    // Product methods
+    ProductResponseDTO createProduct(ProductDTO productDTO);
+    ProductResponseDTO getProductById(Long productId);
+    List<ProductResponseDTO> getAllProducts();
+    List<ProductResponseDTO> getProductsByCategory(Long categoryId);
+    ProductResponseDTO updateProduct(Long productId, ProductDTO productDTO);
+    void deleteProduct(Long productId);
 }

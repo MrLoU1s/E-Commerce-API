@@ -41,13 +41,13 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http, AuthenticationManager authenticationManager) throws Exception {
         JwtAuthenticationFilter jwtAuthenticationFilter = new JwtAuthenticationFilter(authenticationManager, jwtTokenProvider, sessionService, modelMapper);
-        jwtAuthenticationFilter.setFilterProcessesUrl("/api/auth/login");
+        jwtAuthenticationFilter.setFilterProcessesUrl("/api/users/login");
 
         http
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/api/users/register", "/api/auth/login", "/api/auth/refresh").permitAll()
+                        .requestMatchers("/api/users/register", "/api/users/login", "/api/auth/refresh").permitAll()
                         .requestMatchers("/api/products/**").permitAll()
                         .anyRequest().authenticated()
                 )

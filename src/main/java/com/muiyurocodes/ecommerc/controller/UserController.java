@@ -1,5 +1,7 @@
 package com.muiyurocodes.ecommerc.controller;
 
+import com.muiyurocodes.ecommerc.dto.LoginResponseDTO;
+import com.muiyurocodes.ecommerc.dto.UserLoginDTO;
 import com.muiyurocodes.ecommerc.dto.UserRegistrationDTO;
 import com.muiyurocodes.ecommerc.dto.UserResponseDTO;
 import com.muiyurocodes.ecommerc.service.UserService;
@@ -23,5 +25,11 @@ public class UserController {
     public ResponseEntity<UserResponseDTO> registerUser(@Valid @RequestBody UserRegistrationDTO registrationDTO) {
         UserResponseDTO registeredUser = userService.registerUser(registrationDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(registeredUser);
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<LoginResponseDTO> loginUser(@Valid @RequestBody UserLoginDTO loginDTO) {
+        LoginResponseDTO response = userService.loginUser(loginDTO);
+        return ResponseEntity.ok(response);
     }
 }
