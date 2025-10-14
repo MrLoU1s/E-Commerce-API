@@ -5,19 +5,27 @@ import com.muiyurocodes.ecommerc.dto.ProductDTO;
 import com.muiyurocodes.ecommerc.dto.ProductResponseDTO;
 import com.muiyurocodes.ecommerc.service.ProductService;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @RestController
 @RequestMapping("/api")
-@RequiredArgsConstructor
 public class ProductController {
 
     private final ProductService productService;
+    
+    // Explicit constructor
+    public ProductController(ProductService productService) {
+        this.productService = productService;
+    }
 
     // Category Endpoints
     @PostMapping("/categories")
@@ -65,7 +73,9 @@ public class ProductController {
     }
 
     @PutMapping("/products/{id}")
-    public ResponseEntity<ProductResponseDTO> updateProduct(@PathVariable("id") Long productId, @Valid @RequestBody ProductDTO productDTO) {
+    public ResponseEntity<ProductResponseDTO> updateProduct(
+            @PathVariable("id") Long productId, 
+            @Valid @RequestBody ProductDTO productDTO) {
         return ResponseEntity.ok(productService.updateProduct(productId, productDTO));
     }
 
@@ -73,5 +83,31 @@ public class ProductController {
     public ResponseEntity<Void> deleteProduct(@PathVariable("id") Long productId) {
         productService.deleteProduct(productId);
         return ResponseEntity.noContent().build();
+    }
+    
+    // Search Endpoint
+    @GetMapping("/products/search")
+    public ResponseEntity<Page<ProductResponseDTO>> searchProducts(
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) String description,
+            @RequestParam(required = false) BigDecimal minPrice,
+            @RequestParam(required = false) BigDecimal maxPrice,
+            @RequestParam(required = false) Long categoryId,
+            @RequestParam(required = false) Boolean inStock,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "name") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDir) {
+        
+        Sort sort = sortDir.equalsIgnoreCase("desc") ? 
+                Sort.by(sortBy).descending() : 
+                Sort.by(sortBy).ascending();
+        
+        Pageable pageable = PageRequest.of(page, size, sort);
+        
+        Page<ProductResponseDTO> products = productService.searchProducts(
+                name, description, minPrice, maxPrice, categoryId, inStock, pageable);
+        
+        return ResponseEntity.ok(products);
     }
 }

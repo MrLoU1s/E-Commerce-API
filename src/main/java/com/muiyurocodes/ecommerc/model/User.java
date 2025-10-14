@@ -31,7 +31,6 @@ public class User implements UserDetails {
 
     private String firstName;
     private String lastName;
-    private String address;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -43,7 +42,10 @@ public class User implements UserDetails {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Order> orders = new ArrayList<>();
 
-    // Helper method to manage bidirectional relationship
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Address> addresses = new ArrayList<>();
+
+    // Helper methods to manage bidirectional relationships
     public void setCart(Cart cart) {
         this.cart = cart;
         if (cart != null) {
@@ -51,6 +53,15 @@ public class User implements UserDetails {
         }
     }
 
+    public void addAddress(Address address) {
+        addresses.add(address);
+        address.setUser(this);
+    }
+
+    public void removeAddress(Address address) {
+        addresses.remove(address);
+        address.setUser(null);
+    }
     // --- UserDetails Implementation ---
 
     @Override

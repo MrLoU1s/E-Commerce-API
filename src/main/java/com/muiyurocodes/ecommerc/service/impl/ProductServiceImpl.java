@@ -1,8 +1,6 @@
 package com.muiyurocodes.ecommerc.service.impl;
 
-import com.muiyurocodes.ecommerc.dto.CategoryDTO;
-import com.muiyurocodes.ecommerc.dto.ProductDTO;
-import com.muiyurocodes.ecommerc.dto.ProductResponseDTO;
+import com.muiyurocodes.ecommerc.dto.*;
 import com.muiyurocodes.ecommerc.exception.CategoryNotFoundException;
 import com.muiyurocodes.ecommerc.exception.ProductNotFoundException;
 import com.muiyurocodes.ecommerc.model.Category;
@@ -12,8 +10,11 @@ import com.muiyurocodes.ecommerc.repository.ProductRepository;
 import com.muiyurocodes.ecommerc.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
+import org.springframework.transaction.annotation.Transactional;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -51,7 +52,8 @@ public class ProductServiceImpl implements ProductService {
         if (!categoryRepository.existsById(categoryId)) {
             throw new CategoryNotFoundException("Category not found with id: " + categoryId);
         }
-        // Note: This logic might need adjustment based on desired behavior for products in a deleted category.
+        // Note: This logic might need adjustment based on desired behavior for products
+        // in a deleted category.
         // Here, we are disassociating products from the category.
         productRepository.findByCategoryId(categoryId).forEach(product -> {
             product.setCategory(null);
@@ -63,7 +65,8 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public ProductResponseDTO createProduct(ProductDTO productDTO) {
         Category category = categoryRepository.findById(productDTO.getCategoryId())
-                .orElseThrow(() -> new CategoryNotFoundException("Category not found with id: " + productDTO.getCategoryId()));
+                .orElseThrow(() -> new CategoryNotFoundException(
+                        "Category not found with id: " + productDTO.getCategoryId()));
 
         Product product = modelMapper.map(productDTO, Product.class);
         product.setCategory(category);
@@ -102,7 +105,8 @@ public class ProductServiceImpl implements ProductService {
                 .orElseThrow(() -> new ProductNotFoundException("Product not found with id: " + productId));
 
         Category category = categoryRepository.findById(productDTO.getCategoryId())
-                .orElseThrow(() -> new CategoryNotFoundException("Category not found with id: " + productDTO.getCategoryId()));
+                .orElseThrow(() -> new CategoryNotFoundException(
+                        "Category not found with id: " + productDTO.getCategoryId()));
 
         // Use ModelMapper to map fields from DTO to existing entity, preserving the ID
         modelMapper.map(productDTO, existingProduct);
@@ -118,5 +122,58 @@ public class ProductServiceImpl implements ProductService {
             throw new ProductNotFoundException("Product not found with id: " + productId);
         }
         productRepository.deleteById(productId);
+    }
+
+    @Override
+    public Page<ProductResponseDTO> searchProducts(
+            String name,
+            String description,
+            BigDecimal minPrice,
+            BigDecimal maxPrice,
+            Long categoryId,
+            Boolean inStock,
+            Pageable pageable) {
+
+        // Use the repository method to search products with the given criteria
+        Page<Product> productPage = productRepository.searchProducts(
+                name, description, minPrice, maxPrice, categoryId, inStock, pageable);
+
+        // Map the products to DTOs
+        return productPage.map(product -> modelMapper.map(product, ProductResponseDTO.class));
+    }
+
+    @Override
+    public List<ProductResponseDTO> getLowStockProducts(int threshold) {
+        // Find products with stock quantity less than or equal to the threshold
+        List<Product> lowStockProducts = productRepository.findAllByStockQuantityLessThanEqual(threshold);
+
+        // Map the products to DTOs
+        return lowStockProducts.stream()
+                .map(product -> modelMapper.map(product, ProductResponseDTO.class))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional
+    public List<ProductResponseDTO> updateProductStock(List<ProductStockUpdateDTO> stockUpdates) {
+        List<Product> updatedProducts = stockUpdates.stream()
+                .map(update -> {
+                    // Find the product by ID
+                    Product product = productRepository.findById(update.getProductId())
+                            .orElseThrow(() -> new ProductNotFoundException(
+                                    "Product not found with id: " + update.getProductId()));
+
+                    // Update the stock quantity
+                    product.setStockQuantity(update.getStockQuantity());
+
+                    // Save the updated product
+                    return productRepository.save(product);
+                })
+                .collect(Collectors.toList());
+
+        // Map the updated products to DTOs
+        return updatedProducts.stream()
+                .map(product -> modelMapper.map(product, ProductResponseDTO.class))
+                .collect(Collectors.toList());
     }
 }

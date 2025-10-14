@@ -63,9 +63,10 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.DELETE, "/api/products/**").hasAuthority("ROLE_ADMIN")
                         .requestMatchers(HttpMethod.POST, "/api/categories/**").hasAuthority("ROLE_ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/categories/**").hasAuthority("ROLE_ADMIN")
-                        // Order and payment endpoints (authenticated users)
+                        // Order, payment, and user profile endpoints (authenticated users)
                         .requestMatchers("/api/orders/**").authenticated()
                         .requestMatchers("/api/payments/**").authenticated()
+                        .requestMatchers("/api/users/{userId}/**").authenticated()
                         .anyRequest().authenticated())
                 .addFilter(jwtAuthenticationFilter)
                 .addFilterBefore(jwtAuthorizationFilter, UsernamePasswordAuthenticationFilter.class);

@@ -1,8 +1,9 @@
 package com.muiyurocodes.ecommerc.repository;
 
-
 import com.muiyurocodes.ecommerc.model.Role;
 import com.muiyurocodes.ecommerc.model.User;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -11,11 +12,12 @@ import java.util.Optional;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
-    //CRUD method implementation is provided by JpaRepository
+    // CRUD method implementation is provided by JpaRepository
     Optional<User> findByEmail(String email);
 
     boolean existsByEmail(String email);
 
     List<User> findByRole(Role role);
 
+    Page<User> findByRole(Role role, Pageable pageable);
 }
